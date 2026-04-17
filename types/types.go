@@ -1,4 +1,4 @@
-package zep_fast_ingest
+package types
 
 import "context"
 

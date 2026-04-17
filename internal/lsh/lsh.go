@@ -2,6 +2,7 @@ package lsh
 
 import (
 	"fmt"
+	"sync"
 )
 
 // Deduplicator manages our local LSH buckets
@@ -9,6 +10,7 @@ type Deduplicator struct {
 	// A map of BandIndex -> HashOfBand -> DocumentID
 	// This acts as our localized in-memory database of seen text
 	buckets []map[string]string
+	mu sync.RWMutex
 }
 
 func NewDeduplicator() *Deduplicator {
@@ -25,6 +27,8 @@ func NewDeduplicator() *Deduplicator {
 // it flags it as a duplicate, saving an expensive Zep API call.
 func (d *Deduplicator) IsDuplicate(docID string, signature[]uint64) bool {
 	isDup := false
+	d.mu.Lock()         // Lock for writing/reading
+	defer d.mu.Unlock() // Unlock when done
 
 	for bandIdx := 0; bandIdx < Bands; bandIdx++ {
 		// Extract the 'RowsPerBand' (e.g., 5 numbers) for this band
