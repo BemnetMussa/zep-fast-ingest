@@ -1,0 +1,11 @@
+# Environment Variables
+.env
+
+# Build Artifacts
+zep-ingest
+mock-server
+*.exe
+
+# Test Data
+*.jsonl
+*.test
