@@ -1,3 +1,5 @@
+// Package worker implements a producer-consumer concurrency model 
+// to maximize CPU utilization during the expensive hashing computations.
 package worker
 
 import (
@@ -14,7 +16,8 @@ type Result struct {
 	IsDuplicate bool
 }
 
-// StartWorkerPool creates 'n' workers to process documents concurrently
+// StartWorkerPool spawns configurable concurrent worker goroutines.
+// It bridges the file streamer (Producer) and the Zep network batcher (Consumer).
 func StartWorkerPool(ctx context.Context, numWorkers int, docChan <-chan types.Document, deduper *lsh.Deduplicator) <-chan Result {
 	resultChan := make(chan Result, numWorkers*2)
 	var wg sync.WaitGroup

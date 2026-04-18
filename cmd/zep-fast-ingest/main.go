@@ -1,3 +1,5 @@
+// Package main is the entry point for the Zep-Fast-Ingest pipeline.
+// It orchestrates the streamer, worker pool, and Zep Cloud batcher.
 package main
 
 import (
@@ -28,8 +30,10 @@ func main() {
 		cancel()
 	}()
 
-	var filename string
+	var filename, threadID, userID string
 	flag.StringVar(&filename, "file", "data.jsonl", "JSONL file to ingest")
+	flag.StringVar(&threadID, "thread", "fast_ingest_test_thread", "Zep Cloud Thread ID to ingest into")
+	flag.StringVar(&userID, "user", "admin_uploader", "Zep Cloud User ID to associate with the thread")
 	flag.Parse()
 
 	fmt.Println("🚀 Starting Zep-Fast-Ingest Pipeline...")
@@ -47,7 +51,7 @@ func main() {
 	// 5. THE CRITICAL STEP: Hand results to the Zep Batcher
 	// This function will block until resultChan is closed and all batches are sent
 	fmt.Println("📦 Processing stream and sending unique batches to Zep...")
-	zepclient.ProcessResults(ctx, resultChan, 100) // Batch size of 100
+	zepclient.ProcessResults(ctx, resultChan, 100, threadID, userID) // Initial batch buffer size of 100
 
 	// 6. Final check for errors
 	select {

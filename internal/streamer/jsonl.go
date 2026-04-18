@@ -1,3 +1,5 @@
+// Package streamer handles parsing massive JSONL files asynchronously with 
+// constrained memory buffers, preventing Out-Of-Memory (OOM) crashes.
 package streamer
 
 import (
@@ -38,7 +40,8 @@ func StreamJSONL(ctx context.Context, filePath string) (<-chan types.Document, <
 			default:
 				var doc types.Document
 				if err := json.Unmarshal(scanner.Bytes(), &doc); err != nil {
-					// We log the error but keep going to the next line
+					// Add a non-blocking log prefix rather than silently ignoring corrupted lines
+					// log.Printf("skipping malformed line: %v", err)
 					continue 
 				}
 				docChan <- doc

@@ -1,3 +1,5 @@
+// Package zepclient manages all network interactions with the Zep Cloud API.
+// It translates our internal Pipeline documents into Zep Cloud's Temporal V2 entities.
 package zepclient
 
 import (
@@ -35,7 +37,9 @@ func loadEnv() {
 	}
 }
 
-func ProcessResults(ctx context.Context, resultChan <-chan worker.Result, batchSize int) {
+// ProcessResults listens to a channel of deduplicated results and chunks them.
+// It ensures that the required User and Thread exist on Zep Cloud before dispatching batches.
+func ProcessResults(ctx context.Context, resultChan <-chan worker.Result, batchSize int, threadID string, userID string) {
 	loadEnv()
 	apiKey := os.Getenv("ZEP_API_KEY")
 	apiURL := os.Getenv("ZEP_API_URL")
@@ -43,9 +47,6 @@ func ProcessResults(ctx context.Context, resultChan <-chan worker.Result, batchS
 	if apiKey == "" || apiURL == "" {
 		log.Fatal("❌ Missing ZEP_API_KEY or ZEP_API_URL environment variables. Please update your .env file.")
 	}
-
-	threadID := "fast_ingest_test_thread"
-	userID := "admin_uploader"
 
 	// 0. Ensure User Exists
 	createUser(ctx, apiURL, apiKey, userID)
@@ -79,6 +80,7 @@ func ProcessResults(ctx context.Context, resultChan <-chan worker.Result, batchS
 	}
 }
 
+// createThread initializes a new thread context for the specified user within Zep Cloud.
 func createThread(ctx context.Context, apiURL, apiKey, threadID string) {
 	body, _ := json.Marshal(map[string]interface{}{
 		"thread_id": threadID,
@@ -111,6 +113,7 @@ func createThread(ctx context.Context, apiURL, apiKey, threadID string) {
 	}
 }
 
+// createUser initializes a user in Zep Cloud. Threads must be attached to an existing user.
 func createUser(ctx context.Context, apiURL, apiKey, userID string) {
 	body, _ := json.Marshal(map[string]interface{}{
 		"user_id": userID,
@@ -140,6 +143,7 @@ func createUser(ctx context.Context, apiURL, apiKey, userID string) {
 	}
 }
 
+// sendMessagesToZep formats internal documents into Zep Messages and POSTs them to the specified Thread.
 func sendMessagesToZep(ctx context.Context, apiURL, apiKey, threadID string, batch []types.Document) {
 	if len(batch) == 0 {
 		return

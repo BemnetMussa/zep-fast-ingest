@@ -1,3 +1,5 @@
+// Package lsh implements Locality Sensitive Hashing (LSH) algorithms
+// combined with MinHash to group similar documents in tightly bounded memory.
 package lsh
 
 import (
@@ -9,16 +11,20 @@ const (
 	ShardCount = 256 // We split our map into 256 shards to reduce lock contention
 )
 
+// Shard represents a single bucket segment locked independently.
 type Shard struct {
 	sync.RWMutex
 	buckets map[string]string
 }
 
+// Deduplicator is our concurrent MinHash collision map.
+// It manages the distributed buckets safely using 256 independent RWMutex partitions.
 type Deduplicator struct {
 	// Instead of one map, we have a slice of 256 independent shards
 	shards [ShardCount]*Shard
 }
 
+// NewDeduplicator constructs the distributed hash bands and initializes the striping Mutexes.
 func NewDeduplicator() *Deduplicator {
 	d := &Deduplicator{}
 	for i := 0; i < ShardCount; i++ {
@@ -39,6 +45,8 @@ func (d *Deduplicator) getShard(bandHash string) *Shard {
 	return d.shards[sum%ShardCount]
 }
 
+// IsDuplicate splits the Document Signature into Bands and checks for identical hashes in each band.
+// By matching across a band, it calculates a 98% approximate Jaccard similarity threshold.
 func (d *Deduplicator) IsDuplicate(docID string, signature []uint64) bool {
 	isDup := false
 
