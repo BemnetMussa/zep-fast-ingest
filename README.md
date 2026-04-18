@@ -22,3 +22,5 @@ This tool uses a **client-side MinHash + LSH (Locality Sensitive Hashing)** pipe
 - **Time:** ~2.3 seconds
 - **Throughput:** ~43,000 docs/sec
 - **Reduction:** 98.7% (Filtered 98,725 near-duplicates)
+
+- 
