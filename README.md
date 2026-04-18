@@ -25,9 +25,10 @@ We built a dual-mode testing framework to prove this system works.
 
 **2. The Raw Throughput Benchmark (Local Mock Server)**
 - Tested locally against a 100,000 document simulated dataset injected with 98% semantic duplication.
-- **Execution Time:** ~0.43 seconds (431ms)
-- **Scale Impact:** Lock striping dropped execution time from an initial 2.38 seconds down to <500ms.
-- **Data Reduction:** Filtered over 99,000 near-duplicates dynamically.
+- **Engine Throughput:** ~230,000 documents/sec (Raw MinHash + LSH Lensing).
+- **End-to-End Throughput:** ~42,000 documents/sec (Including simulated local network batching).
+- **Data Reduction:** 98.7% Filtered near-duplicates dynamically.
+- **Scale Impact:** Lock striping dropped execution time from 2.38s down to **0.43s** for the 100k set.
 
 ## Setup & Run
 
