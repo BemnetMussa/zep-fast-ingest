@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -27,6 +28,10 @@ func main() {
 		cancel()
 	}()
 
+	var filename string
+	flag.StringVar(&filename, "file", "data.jsonl", "JSONL file to ingest")
+	flag.Parse()
+
 	fmt.Println("🚀 Starting Zep-Fast-Ingest Pipeline...")
 	start := time.Now()
 
@@ -34,7 +39,7 @@ func main() {
 	deduper := lsh.NewDeduplicator()
 
 	// 3. Start Streamer
-	docChan, errChan := streamer.StreamJSONL(ctx, "data.jsonl")
+	docChan, errChan := streamer.StreamJSONL(ctx, filename)
 
 	// 4. Start Worker Pool (10 parallel workers)
 	resultChan := worker.StartWorkerPool(ctx, 10, docChan, deduper)
